@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #012a4a;
+}
+
+@layer components {
+  .app-button {
+    @apply m-1 px-3 py-1 rounded-lg text-white font-medium cursor-pointer active:brightness-90;
+  }
+
+  .field-inputs {
+    @apply text-sm focus:ring-primary hover:border hover:rounded-xs placeholder:text-gray-400;
+  }
+}
+
+@layer base {
+  button {
+    @apply cursor-pointer;
+  }
+}
