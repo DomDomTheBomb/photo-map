@@ -15,9 +15,11 @@ export function AuthProvider({ children }) {
       setIsAuthLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+      }
+    );
 
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -29,7 +31,7 @@ export function AuthProvider({ children }) {
   const signOut = () => supabase.auth.signOut();
 
   return (
-    <AuthContext.Provider value={{ session, loading: isAuthLoading, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, isAuthLoading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

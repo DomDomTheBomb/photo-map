@@ -1,7 +1,15 @@
 // Resize a File/Blob to a max dimension, return a Blob
-export async function resizeImage(source, maxDimension, quality = 0.82, format = 'image/webp') {
+export async function resizeImage(
+  source,
+  maxDimension,
+  quality = 0.82,
+  format = 'image/webp'
+) {
   const bitmap = await createImageBitmap(source);
-  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(
+    1,
+    maxDimension / Math.max(bitmap.width, bitmap.height)
+  );
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);

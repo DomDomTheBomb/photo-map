@@ -15,11 +15,14 @@ export async function getLocations() {
 
 // retrieve photos of a given location
 export async function getPhotosForLocation(locationID) {
-  const {data, error} = await supabase.from('photos').select('*').eq('location_id', locationID)
+  const { data, error } = await supabase
+    .from('photos')
+    .select('*')
+    .eq('location_id', locationID);
 
-  if (error) throw new error
+  if (error) throw new error();
 
-  return data
+  return data;
 }
 
 /**
@@ -30,7 +33,7 @@ export async function insertPhotoTableRow(insertRows) {
   const { data, error } = await supabase.from('photos').insert(insertRows);
 
   if (error) {
-    throw new error;
+    throw new error();
   }
 
   return data;
@@ -41,7 +44,10 @@ export async function insertPhotoTableRow(insertRows) {
  * @param {Object[]} insertRows
  */
 export async function insertLocationTableRow(insertRow) {
-  const { data, error } = await supabase.from('locations').insert(insertRow).select();
+  const { data, error } = await supabase
+    .from('locations')
+    .insert(insertRow)
+    .select();
 
   if (error) {
     throw new error();
@@ -51,11 +57,11 @@ export async function insertLocationTableRow(insertRow) {
 }
 
 // Upload file using supabase upload
-export async function uploadFileToSupabase(file, path, name=null) {
+export async function uploadFileToSupabase(file, path, name = null) {
   let fileName = `${path}/${crypto.randomUUID()}`;
   // add name if given
   if (name) {
-    fileName += `-${name}`
+    fileName += `-${name}`;
   }
 
   const { data, error } = await supabase.storage

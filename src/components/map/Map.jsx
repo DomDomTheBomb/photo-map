@@ -32,11 +32,10 @@ export default function Map() {
   const setLocations = useLocations((state) => state.setLocations);
   const setPhotos = useLocations((state) => state.setPhotos);
 
-
   // toggle for dialog
-  const [dialogToggle, setDialogToggle] = useState(false)
+  const [dialogToggle, setDialogToggle] = useState(false);
   // state for if photos are loading
-  const [arePhotosLoading, setArePhotosLoading] = useState(false)
+  const [arePhotosLoading, setArePhotosLoading] = useState(false);
 
   useEffect(() => {
     // Prevent double-init in React Strict Mode
@@ -172,22 +171,22 @@ export default function Map() {
     // when user clicks on unclustered point, spawn dialog for photos
     map.current.on('click', 'unclustered-point', (e) => {
       // grab the location ID
-      const locationId = e.features[0].properties.id
+      const locationId = e.features[0].properties.id;
 
       //  spawn a dialog and get photos
-      setDialogToggle(true)
-      setArePhotosLoading(true)
+      setDialogToggle(true);
+      setArePhotosLoading(true);
       getPhotosForLocation(locationId)
         .then((data) => {
           setPhotos(data);
         })
         .catch((error) => {
-          console.error(error)
+          console.error(error);
         })
         .finally(() => {
           setArePhotosLoading(false);
         });
-    })
+    });
 
     map.current.on('mousedown', stopSpin);
     map.current.on('touchstart', stopSpin);
@@ -200,10 +199,10 @@ export default function Map() {
   }, []);
 
   return (
-    < >
+    <>
       {/* PhotoCarousel */}
       <PhotoCarousel
-        isOpen={dialogToggle} 
+        isOpen={dialogToggle}
         onClose={() => setDialogToggle(false)}
         isLoading={arePhotosLoading}
       />

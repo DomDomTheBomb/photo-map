@@ -166,10 +166,10 @@ function Select({
                 type="text"
                 value={search}
                 onChange={(e) => {
-                    setSearch(e.target.value);
-                    // Notify parent so it can trigger an async search (e.g. debounced API call)
-                    onSearch?.(e.target.value);
-                  }}
+                  setSearch(e.target.value);
+                  // Notify parent so it can trigger an async search (e.g. debounced API call)
+                  onSearch?.(e.target.value);
+                }}
                 placeholder="Search..."
                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
               />

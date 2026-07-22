@@ -5,13 +5,12 @@ import PhotoInfoReview from './PhotoInfoReview';
 import LocationStore from '../../store/locations';
 import { getDistance } from '../../helpers/distance';
 import { resizeImage } from '../../helpers/image';
-import * as consts from '../../helpers/const'
+import * as consts from '../../helpers/const';
 
 import {
   uploadFileToSupabase,
   insertPhotoTableRow,
 } from '../../services/supabase';
-
 
 import { useState, useMemo } from 'react';
 import exifr, { thumbnail } from 'exifr';
@@ -128,16 +127,29 @@ function PhotoPicker({ isOpen, onClose }) {
       const imagebatch = [];
 
       // resize images in batch into 3 different sizes. display, medium and thumbnail
-      for (let imageIndex = i; imageIndex < Math.min(i + batchSize, filesForUpload.length); imageIndex++) {
+      for (
+        let imageIndex = i;
+        imageIndex < Math.min(i + batchSize, filesForUpload.length);
+        imageIndex++
+      ) {
         // only resize display size if its not within margin
-        const displaySizeRatio = Math.abs(1 - Math.max(filesForUpload[imageIndex].exif.ExifImageHeight, filesForUpload[imageIndex].exif.ExifImageWidth) / consts.DISPLAY_WIDTH);
-        
+        const displaySizeRatio = Math.abs(
+          1 -
+            Math.max(
+              filesForUpload[imageIndex].exif.ExifImageHeight,
+              filesForUpload[imageIndex].exif.ExifImageWidth
+            ) /
+              consts.DISPLAY_WIDTH
+        );
+
         // resize image into 3 sizes at the same time
         const [thumbnail, medium, display] = await Promise.all([
           resizeImage(filesForUpload[imageIndex], consts.THUMBNAIL_WIDTH, 0.7),
           resizeImage(filesForUpload[imageIndex], consts.MEDIUM_WIDTH, 0.8),
-          displaySizeRatio > consts.RESIZE_MARGIN ? resizeImage(filesForUpload[imageIndex], consts.DISPLAY_WIDTH, 0.9) : filesForUpload[imageIndex]
-        ])
+          displaySizeRatio > consts.RESIZE_MARGIN
+            ? resizeImage(filesForUpload[imageIndex], consts.DISPLAY_WIDTH, 0.9)
+            : filesForUpload[imageIndex],
+        ]);
 
         imagebatch.push({
           name: filesForUpload[imageIndex].name,
@@ -146,23 +158,33 @@ function PhotoPicker({ isOpen, onClose }) {
             thumbnail: thumbnail,
             medium: medium,
             display: display,
-          }
-        })
+          },
+        });
       }
-      
-      await Promise.all(imagebatch.map((b) =>
-        Promise.all([
-          uploadFileToSupabase(b.images.thumbnail, consts.THUMBNAIL_FOLDER, b.name),
-          uploadFileToSupabase(b.images.medium, consts.MEDIUM_FOLDER, b.name),
-          uploadFileToSupabase(b.images.display, consts.DISPLAY_FOLDER, b.name)
-        ])
-      ))
+
+      await Promise.all(
+        imagebatch.map((b) =>
+          Promise.all([
+            uploadFileToSupabase(
+              b.images.thumbnail,
+              consts.THUMBNAIL_FOLDER,
+              b.name
+            ),
+            uploadFileToSupabase(b.images.medium, consts.MEDIUM_FOLDER, b.name),
+            uploadFileToSupabase(
+              b.images.display,
+              consts.DISPLAY_FOLDER,
+              b.name
+            ),
+          ])
+        )
+      )
         .then((data) => {
           data.forEach(([thumbnail, medium, display], y) => {
             // convert batch number to array index of file
             const fileIndex = i + y;
             // then set file upload info
-            const uploadInfo = filesForUpload[fileIndex].uploadInfo
+            const uploadInfo = filesForUpload[fileIndex].uploadInfo;
 
             uploadRows.push({
               location_id: uploadInfo.locationId,
@@ -173,12 +195,12 @@ function PhotoPicker({ isOpen, onClose }) {
               lat: uploadInfo.lat,
               long: uploadInfo.long,
               date_taken: uploadInfo.dateTaken,
-            })
+            });
           });
         })
         .catch((error) => {
           console.log(error);
-        })
+        });
     }
 
     // upload information
@@ -249,7 +271,11 @@ function PhotoPicker({ isOpen, onClose }) {
           </button>
         )}
 
-        <button aria-busy={true} className="app-button bg-gray-400" onClick={cancel}>
+        <button
+          aria-busy={true}
+          className="app-button bg-gray-400"
+          onClick={cancel}
+        >
           {' '}
           Cancel{' '}
         </button>
