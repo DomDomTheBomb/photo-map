@@ -4,13 +4,17 @@ import PhotoInfoReview from './PhotoInfoReview';
 
 import LocationStore from '../../store/locations';
 import { getDistance } from '../../helpers/distance';
+import { resizeImage } from '../../helpers/image';
+import * as consts from '../../helpers/const'
+
 import {
   uploadFileToSupabase,
   insertPhotoTableRow,
 } from '../../services/supabase';
 
+
 import { useState, useMemo } from 'react';
-import exifr from 'exifr';
+import exifr, { thumbnail } from 'exifr';
 
 function PhotoPicker({ isOpen, onClose }) {
   const locations = LocationStore((state) => state.locations);
@@ -92,7 +96,6 @@ function PhotoPicker({ isOpen, onClose }) {
         // represents data that would be uploaded to db
         file.uploadInfo = {
           locationId: null,
-          storagePath: null,
           caption: null,
           lat: gps?.latitude,
           long: gps?.longitude,
@@ -116,43 +119,70 @@ function PhotoPicker({ isOpen, onClose }) {
 
   async function uploadPhotos() {
     // arbitrary. Set to this for now unless we ever change it
-    const batchSize = 5;
-    const photoBatches = [];
+    const batchSize = 3;
+    // rows to be uploaded to supabase
+    const uploadRows = [];
 
     // create batches
     for (let i = 0; i < filesForUpload.length; i += batchSize) {
-      photoBatches.push(filesForUpload.slice(i, i + batchSize));
-    }
+      const imagebatch = [];
 
-    // start upload process
-    for (const [x, batch] of photoBatches.entries()) {
-      await Promise.all(batch.map((b) => uploadFileToSupabase(b)))
+      // resize images in batch into 3 different sizes. display, medium and thumbnail
+      for (let imageIndex = i; imageIndex < Math.min(i + batchSize, filesForUpload.length); imageIndex++) {
+        // only resize display size if its not within margin
+        const displaySizeRatio = Math.abs(1 - Math.max(filesForUpload[imageIndex].exif.ExifImageHeight, filesForUpload[imageIndex].exif.ExifImageWidth) / consts.DISPLAY_WIDTH);
+        
+        // resize image into 3 sizes at the same time
+        const [thumbnail, medium, display] = await Promise.all([
+          resizeImage(filesForUpload[imageIndex], consts.THUMBNAIL_WIDTH, 0.7),
+          resizeImage(filesForUpload[imageIndex], consts.MEDIUM_WIDTH, 0.8),
+          displaySizeRatio > consts.RESIZE_MARGIN ? resizeImage(filesForUpload[imageIndex], consts.DISPLAY_WIDTH, 0.9) : filesForUpload[imageIndex]
+        ])
+
+        imagebatch.push({
+          name: filesForUpload[imageIndex].name,
+          index: imageIndex,
+          images: {
+            thumbnail: thumbnail,
+            medium: medium,
+            display: display,
+          }
+        })
+      }
+      
+      await Promise.all(imagebatch.map((b) =>
+        Promise.all([
+          uploadFileToSupabase(b.images.thumbnail, consts.THUMBNAIL_FOLDER, b.name),
+          uploadFileToSupabase(b.images.medium, consts.MEDIUM_FOLDER, b.name),
+          uploadFileToSupabase(b.images.display, consts.DISPLAY_FOLDER, b.name)
+        ])
+      ))
         .then((data) => {
-          data.forEach((upload, y) => {
+          data.forEach(([thumbnail, medium, display], y) => {
             // convert batch number to array index of file
-            const fileIndex = x * batchSize + y;
-            // then set file upload id and storage path
-            handleFileUploadInfoUpdate(fileIndex, 'storagePath', upload.path);
+            const fileIndex = i + y;
+            // then set file upload info
+            const uploadInfo = filesForUpload[fileIndex].uploadInfo
+
+            uploadRows.push({
+              location_id: uploadInfo.locationId,
+              display_image_path: display.path,
+              medium_image_path: medium.path,
+              thumbnail_image_path: thumbnail.path,
+              caption: uploadInfo.caption,
+              lat: uploadInfo.lat,
+              long: uploadInfo.long,
+              date_taken: uploadInfo.dateTaken,
+            })
           });
         })
         .catch((error) => {
           console.log(error);
-        });
+        })
     }
 
-    // update tables to reflect uploaded photos
-    // build object
-    const photoTableInsertData = filesForUpload.map((photoInfo) => ({
-      location_id: photoInfo.uploadInfo.locationId,
-      storage_path: photoInfo.uploadInfo.storagePath,
-      caption: photoInfo.uploadInfo.caption,
-      lat: photoInfo.uploadInfo.lat,
-      long: photoInfo.uploadInfo.long,
-      date_taken: photoInfo.uploadInfo.dateTaken,
-    }));
-
     // upload information
-    await insertPhotoTableRow(photoTableInsertData)
+    await insertPhotoTableRow(uploadRows)
       .then((data) => {
         console.log(data);
       })
@@ -219,7 +249,7 @@ function PhotoPicker({ isOpen, onClose }) {
           </button>
         )}
 
-        <button className="app-button bg-gray-400" onClick={cancel}>
+        <button aria-busy={true} className="app-button bg-gray-400" onClick={cancel}>
           {' '}
           Cancel{' '}
         </button>

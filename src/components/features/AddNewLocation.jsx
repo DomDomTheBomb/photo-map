@@ -3,6 +3,8 @@ import debounce from 'lodash/debounce';
 import Dialog from '../ui/Dialog';
 import Select from '../ui/Select';
 import { searchCity } from '../../services/geocoding-api';
+import { insertLocationTableRow } from '../../services/supabase'
+import useLocations from '../../store/locations';
 
 function AddNewLocation({ isOpen, onClose }) {
   // Form field states
@@ -18,6 +20,8 @@ function AddNewLocation({ isOpen, onClose }) {
   // City search state — populated by the geocoding API
   const [cityOptions, setCityOptions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  const addLocation = useLocations(state => state.addLocation)
 
   const canCreate = useMemo(() => {
     return !!locationName && 
@@ -60,13 +64,47 @@ function AddNewLocation({ isOpen, onClose }) {
   }
 
   // Create new location entry in db
-  function handleLocationCreation() {
+  async function handleLocationCreation() {
     console.log(locationName)
     console.log(city)
     console.log(country.code)
     console.log(coordinates.latitude)
     console.log(coordinates.longitude)
-    console.log(dateVisited)
+    console.log(dateVisited) 
+
+    const newLocation = [{
+      name: locationName,
+      city: city,
+      country_iso_code: country.code,
+      lat: coordinates.latitude,
+      long: coordinates.longitude,
+      date_visited: dateVisited
+    }]
+
+    await insertLocationTableRow(newLocation)
+      .then((data => {
+        console.log(data)
+        // add new location to the locations list
+        addLocation(data[0])
+      }))
+      .catch((error) => {
+        console.error(error)
+        return
+      })
+
+    // reset values and then close popup
+    resetValues();
+    onClose();
+  }
+
+  // reset form values
+  function resetValues() {
+    setLocationName('');
+    setCity('')
+    setCountry(null)
+    setCoordinates(null)
+    setDateVisited(null)
+    setCityOptions([])
   }
 
   return (
@@ -126,7 +164,8 @@ function AddNewLocation({ isOpen, onClose }) {
       <div className="mt-4 text-right">
         <button
           className="app-button bg-primary disabled:opacity-70 disabled:cursor-default"
-          disabled={canCreate}
+          disabled={!canCreate}
+          onClick={handleLocationCreation}
         >
           Create
         </button>

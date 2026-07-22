@@ -1,8 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as maptilersdk from '@maptiler/sdk';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 import { getLocations } from '/src/services/supabase';
+import { getPhotosForLocation } from '../../services/supabase';
 import { locationsToGeoJson } from '/src/utils/geoJson';
+
+import PhotoCarousel from '../features/PhotoCarousel';
 
 import useLocations from '../../store/locations';
 
@@ -25,8 +28,15 @@ export default function Map() {
   const spinning = useRef(true); // whether auto-spin is active
   const animFrameId = useRef(null); // rAF handle so we can cancel on unmount
 
-  // declare locations store
+  // declare store functions
   const setLocations = useLocations((state) => state.setLocations);
+  const setPhotos = useLocations((state) => state.setPhotos);
+
+
+  // toggle for dialog
+  const [dialogToggle, setDialogToggle] = useState(false)
+  // state for if photos are loading
+  const [arePhotosLoading, setArePhotosLoading] = useState(false)
 
   useEffect(() => {
     // Prevent double-init in React Strict Mode
@@ -159,6 +169,26 @@ export default function Map() {
       });
     });
 
+    // when user clicks on unclustered point, spawn dialog for photos
+    map.current.on('click', 'unclustered-point', (e) => {
+      // grab the location ID
+      const locationId = e.features[0].properties.id
+
+      //  spawn a dialog and get photos
+      setDialogToggle(true)
+      setArePhotosLoading(true)
+      getPhotosForLocation(locationId)
+        .then((data) => {
+          setPhotos(data);
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+        .finally(() => {
+          setArePhotosLoading(false);
+        });
+    })
+
     map.current.on('mousedown', stopSpin);
     map.current.on('touchstart', stopSpin);
 
@@ -170,9 +200,18 @@ export default function Map() {
   }, []);
 
   return (
-    <div
-      ref={mapContainer}
-      style={{ width: '100%', height: 'calc(100vh - 60px)' }}
-    />
+    < >
+      {/* PhotoCarousel */}
+      <PhotoCarousel
+        isOpen={dialogToggle} 
+        onClose={() => setDialogToggle(false)}
+        isLoading={arePhotosLoading}
+      />
+      {/* render the map */}
+      <div
+        ref={mapContainer}
+        style={{ width: '100%', height: 'calc(100vh - 60px)' }}
+      />
+    </>
   );
 }

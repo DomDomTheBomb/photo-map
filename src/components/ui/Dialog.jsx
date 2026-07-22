@@ -20,7 +20,7 @@ function Dialog({
       >
         {/* max-w-md is omitted when a custom width is provided, since max-width would override the inline width style */}
         <div
-          className={`bg-white rounded-xl p-4 w-full shadow-xl ${!width ? 'max-w-md' : ''}`}
+          className={`flex flex-col bg-white rounded-xl p-4 w-full shadow-xl ${!width ? 'max-w-md' : ''}`}
           style={{ width, height }}
           onClick={(e) => e.stopPropagation()}
         >
