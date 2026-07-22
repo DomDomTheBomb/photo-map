@@ -1,5 +1,5 @@
 // Base URL for the Open-Meteo Geocoding API
-const BASE_URL = "https://geocoding-api.open-meteo.com/v1";
+const BASE_URL = 'https://geocoding-api.open-meteo.com/v1';
 
 /**
  * Makes a GET request to the Open-Meteo Geocoding API.
@@ -32,8 +32,8 @@ async function get(endpoint, params = {}) {
  */
 export async function searchCity(city, options = {}) {
   if (!city || !city.trim()) {
-    throw new Error("City name is required");
+    throw new Error('City name is required');
   }
 
-  return get("/search", { name: city, ...options });
+  return get('/search', { name: city, ...options });
 }
