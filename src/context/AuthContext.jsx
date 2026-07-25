@@ -24,9 +24,14 @@ export function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  // establish supabase functions for signing in and out
-  const signIn = (email, password) =>
-    supabase.auth.signInWithPassword({ email, password });
+  // Sign in and immediately sync session into state so the icon re-renders
+  // reliably — onAuthStateChange alone can miss the SIGNED_IN event after a
+  // fresh signOut in some Supabase versions.
+  const signIn = async (email, password) => {
+    const result = await supabase.auth.signInWithPassword({ email, password });
+    if (result.data?.session) setSession(result.data.session);
+    return result;
+  };
 
   const signOut = () => supabase.auth.signOut();
 

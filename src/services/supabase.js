@@ -25,6 +25,13 @@ export async function getPhotosForLocation(locationID) {
   return data;
 }
 
+// removes photo given its ID
+export async function deletePhotoRow(photoID) {
+  const { error } = await supabase.from('photos').delete().eq('id', photoID);
+
+  if (error) throw new error();
+}
+
 /**
  * insert table rows into the photos supabase table
  * @param {Object[]} insertRows
@@ -73,4 +80,13 @@ export async function uploadFileToSupabase(file, path, name = null) {
   }
 
   return data;
+}
+
+// remove files from supabase
+export async function deleteFileFromSupabase(paths) {
+  const { error } = await supabase.storage.from('Travel Photos').remove(paths);
+
+  if (error) {
+    throw new error(error);
+  }
 }

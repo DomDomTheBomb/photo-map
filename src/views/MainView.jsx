@@ -7,6 +7,7 @@ import PhotoPicker from '../components/features/PhotoPicker';
 import LoginForm from '../components/features/LoginForm';
 
 import { useAuth } from '../context/AuthContext';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 
 export default function MainView() {
   // grab auth session info
@@ -15,7 +16,7 @@ export default function MainView() {
   //determine if we are on the admin page and logged in as valid user
   const location = useLocation();
   const isAdminPage = location.pathname === '/admin';
-  const isAdmin = isAdminPage && !!session;
+  const isAdmin = useIsAdmin();
 
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
 
