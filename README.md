@@ -1,4 +1,12 @@
 # Photo Map
+Welcome to my photo map! The goal of this project is to have a globe I can interact with and showcase photos from my travels.
 
-Welcome to my photo map! This is a project that I am using to learn react. The goal is to have a globe I can interact with where all my photos up.
-The photos and locations are all stored in supabase and they get pulled into the map. The globe and mapping features themselves are implmented using MapTiler.
+Photos are clustered to different locations that I have been to. Clicking on cluster zooms into show a location pin which a user can click on to view the photos I took there. There is a whole admin side to the project that allows me to login and upload/remove photos and add locations
+
+# Tech Stack
+This is written in:
+- React/vite
+- MapTiler SDK for globe and map rendering
+- Supabase for Backend
+- Tailwind for CSS
+- Zustand for store management
