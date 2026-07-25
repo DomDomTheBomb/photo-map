@@ -50,10 +50,15 @@ export default function LoginForm() {
             type="submit"
             disabled={submitting}
           >
-            { submitting ? (<Spinner size='12px' thickness='1.5px' />) : 'Sign In'}
+            {submitting ? <Spinner size="12px" thickness="1.5px" /> : 'Sign In'}
           </button>
           {/* display error when applicable */}
-          { error && (<span className="text-left mt-1 text-xs text-red-500"> *{error} </span>)}
+          {error && (
+            <span className="text-left mt-1 text-xs text-red-500">
+              {' '}
+              *{error}{' '}
+            </span>
+          )}
         </div>
       </form>
     </Dialog>
