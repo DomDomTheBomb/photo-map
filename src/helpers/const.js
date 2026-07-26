@@ -1,3 +1,7 @@
+// Tailwind's default 'sm' breakpoint — used for mobile-vs-desktop logic
+const MOBILE_BREAKPOINT = 640;
+const MD_BREAKPOINT = 768;
+
 // default image lengths in pixels
 const THUMBNAIL_WIDTH = 150;
 const MEDIUM_WIDTH = 500;
@@ -10,6 +14,8 @@ const MEDIUM_FOLDER = 'medium';
 const DISPLAY_FOLDER = 'display';
 
 export {
+  MOBILE_BREAKPOINT,
+  MD_BREAKPOINT,
   THUMBNAIL_WIDTH,
   MEDIUM_WIDTH,
   DISPLAY_WIDTH,
