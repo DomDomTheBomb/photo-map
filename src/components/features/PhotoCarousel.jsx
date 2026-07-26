@@ -10,6 +10,8 @@ import Spinner from '../ui/spinner/spinner';
 
 import useLocations from '../../store/locations';
 import { useIsAdmin } from '../../hooks/useIsAdmin';
+import { MD_BREAKPOINT } from '../../helpers/const';
+
 import {
   supabase,
   deleteFileFromSupabase,
@@ -18,8 +20,11 @@ import {
 
 const BUCKET_URL = `${import.meta.env.VITE_SUPABASE_URL}storage/v1/object/public/Travel Photos/`;
 
-function PhotoCarousel({ isOpen = false, onClose, isLoading = false }) {
+function PhotoCarousel({ isOpen = false, onClose, isLoading = false, name="" }) {
   const isAdmin = useIsAdmin();
+
+  // determine size for dialog window
+  const [photoGridWidth, photoGridHeight] = window.innerWidth <= MD_BREAKPOINT ? ['100%', '100%'] : ['60%', '80%']
 
   const photos = useLocations((state) => state.photos);
   const setPhotos = useLocations((state) => state.setPhotos);
@@ -73,18 +78,21 @@ function PhotoCarousel({ isOpen = false, onClose, isLoading = false }) {
         index={currentPhoto}
         slides={lightboxPhotos}
       />
-      <Dialog isOpen={isOpen} onClose={onClose} width="60%" height="80%">
-        <div className="mb-3">
-          <span className="text-2xl font-medium"> Photos </span>
+      <Dialog isOpen={isOpen} onClose={onClose} width={photoGridWidth} height={photoGridHeight}>
+        <div className="flex w-full mb-3 place-content-between">
+          <span className="text-2xl font-medium"> {name} Photos </span>
+          <button className="w-7 h-7" onClick={onClose}>
+            <CloseIcon/>
+          </button>
         </div>
 
         {/* flex-1 fills remaining dialog height; overflow-y-auto enables scrolling when photos exceed it */}
         <div className="flex-1 overflow-y-auto">
           {/* flex-wrap rows where every image shares the same fixed height; w-auto preserves aspect ratio */}
           {!isLoading ? (
-            <div className="py-2 flex flex-wrap gap-2 justify-center">
+            <div className="py-2 lg:flex lg:flex-wrap lg:gap-2 gap-1 justify-center grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))]">
               {photos.map((photo, i) => (
-                <div className="rounded hover:scale-102 hover:shadow-md hover:shadow-gray-600 hover:z-10 relative group">
+                <div className="rounded lg:aspect-auto aspect-square md:hover:scale-102 md:hover:shadow-md md:hover:shadow-gray-600 md:hover:z-10 relative group">
                   {isAdmin && (
                     <button
                       onClick={() => deleteImage(i)}
@@ -97,7 +105,7 @@ function PhotoCarousel({ isOpen = false, onClose, isLoading = false }) {
                     key={i}
                     loading="lazy"
                     src={BUCKET_URL + photo.medium_image_path}
-                    className="h-40 w-auto rounded cursor-pointer transition-transform duration-200  relative"
+                    className="lg:h-40 lg:w-auto h-full w-full object-cover rounded cursor-pointer transition-transform duration-200  relative"
                     onClick={() => setLightboxPhoto(i)}
                   />
                 </div>

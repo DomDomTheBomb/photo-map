@@ -8,10 +8,9 @@ function Header() {
   const { signOut } = useAuth();
 
   return (
-    <div className="h-15 px-6 flex items-center bg-primary justify-between">
-      <h1 className="text-3xl text-gray-200 font-bold font-[Century Gothic]">
-        {' '}
-        Where The F*ck Have I Been?{' '}
+    <div className="md:h-15 h-12 md:px-6 px-3 flex items-center bg-primary justify-between">
+      <h1 className="md:text-3xl text-xl text-gray-200 font-bold font-[Century Gothic]">
+        Where The F*ck Has Dom Been?
       </h1>
 
       {isAdmin && (<LogoutIcon className="text-white cursor-pointer" onClick={signOut}/>)}

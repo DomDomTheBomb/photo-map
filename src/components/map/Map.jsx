@@ -8,6 +8,7 @@ import { locationsToGeoJson } from '/src/utils/geoJson';
 import PhotoCarousel from '../features/PhotoCarousel';
 
 import useLocations from '../../store/locations';
+import { MD_BREAKPOINT } from '../../helpers/const';
 
 // Set the global API key for all MapTiler requests
 maptilersdk.config.apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
@@ -34,6 +35,9 @@ export default function Map() {
 
   // toggle for dialog
   const [dialogToggle, setDialogToggle] = useState(false);
+  // keeps track of location name
+  const [locationName, setLocationName] = useState("");
+
   // state for if photos are loading
   const [arePhotosLoading, setArePhotosLoading] = useState(false);
 
@@ -41,11 +45,14 @@ export default function Map() {
     // Prevent double-init in React Strict Mode
     if (map.current) return;
 
+    // Use a smaller initial zoom on narrow screens so the full globe is visible
+    const initialZoom = window.innerWidth <= MD_BREAKPOINT ? 1 : 2;
+
     map.current = new maptilersdk.Map({
       container: mapContainer.current,
       style: maptilersdk.MapStyle.BASE,
       center: [0, 20],
-      zoom: 2,
+      zoom: initialZoom,
       projection: 'globe',
     });
 
@@ -174,6 +181,7 @@ export default function Map() {
       const locationId = e.features[0].properties.id;
 
       //  spawn a dialog and get photos
+      setLocationName(e.features[0].properties.name)
       setDialogToggle(true);
       setArePhotosLoading(true);
       getPhotosForLocation(locationId)
@@ -205,11 +213,12 @@ export default function Map() {
         isOpen={dialogToggle}
         onClose={() => setDialogToggle(false)}
         isLoading={arePhotosLoading}
+        name={locationName}
       />
       {/* render the map */}
       <div
         ref={mapContainer}
-        style={{ width: '100%', height: 'calc(100vh - 60px)' }}
+        className="w-[100%] md:h-[calc(100vh-60px)] h-[calc(100vh-48px)]"
       />
     </>
   );
