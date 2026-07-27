@@ -11,9 +11,14 @@ function PhotoInfoReview({ filesForUpload, onFileUpdate, onRemove }) {
 
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
 
+  function assignAllLocation(locationId) {
+    filesForUpload.forEach((f, i) => onFileUpdate(i, 'locationId', locationId))
+  }
+
   return (
     <>
       <AddNewLocation
+        className="z-70"
         isOpen={locationDialogOpen}
         onClose={() => setLocationDialogOpen(false)}
       />
@@ -22,8 +27,30 @@ function PhotoInfoReview({ filesForUpload, onFileUpdate, onRemove }) {
           <span className="text-2xl font-medium"> Review Photos </span>
         </div>
 
+        {/* Have drop down to assign location to all photos */}
+        <div className="flex flex-col ml-1">
+          <span className="text-sm mt-2"> Assign location to all </span>
+          <Select
+            className='ml-1'
+            items={locations}
+            valueKey="id"
+            labelKey="name"
+            placeholder="select a location..."
+            prependItem={
+              <button onClick={() => setLocationDialogOpen(true)}>
+                Add New Location
+              </button>
+            }
+            onChange={(locationId) =>
+              assignAllLocation(locationId)
+            }
+          >
+            <button> Add New Location </button>
+          </Select>
+        </div>
+
         {/* list of photos and details */}
-        <div className="mt-3 max-h-[60vh] overflow-y-auto">
+        <div className="max-h-[60vh] overflow-y-auto">
           {/* render list of photos */}
           {filesForUpload.map((f, i) => (
             <div key={i} className="my-2 flex rounded-lg border group relative">
@@ -57,8 +84,7 @@ function PhotoInfoReview({ filesForUpload, onFileUpdate, onRemove }) {
                   value={f.uploadInfo.locationId ?? undefined}
                   prependItem={
                     <button onClick={() => setLocationDialogOpen(true)}>
-                      {' '}
-                      Add New Location{' '}
+                      Add New Location
                     </button>
                   }
                   onChange={(locationId) =>

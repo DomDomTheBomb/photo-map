@@ -38,6 +38,7 @@ function Select({
   prependItem = null,
   onSearch,
   loading = false,
+  className='',
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -123,7 +124,7 @@ function Select({
         ref={triggerRef}
         type="button"
         onClick={handleTriggerClick}
-        className="w-full flex items-center border-0 my-1 justify-between pr-3 bg-white rounded-xs text-sm hover:border focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+        className={`w-full flex items-center border-0 my-1 justify-between pr-3 bg-white rounded-xs text-sm hover:border focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${className}`}
       >
         <span className={displayLabel ? 'text-gray-900' : 'text-gray-400'}>
           {displayLabel || placeholder}
@@ -178,7 +179,12 @@ function Select({
             {/* Filtered item list — shows a spinner while an async search is in flight */}
             <ul className="max-h-48 overflow-y-auto py-1">
               {prependItem != null ? (
-                <li className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 active:bg-gray-200">
+                // Close the dropdown when a prepended item is clicked (e.g. "Add New Location")
+                // so it doesn't stay open on top of any dialog that gets triggered
+                <li
+                  className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 active:bg-gray-200"
+                  onClick={() => setIsOpen(false)}
+                >
                   {' '}
                   {prependItem}{' '}
                 </li>

@@ -7,7 +7,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // retrieve all locations
 export async function getLocations() {
-  const { data, error } = await supabase.from('locations').select('*');
+  const { data, error } = await supabase.from('locations').select('*').order('name');
 
   if (error) throw error;
   return data;
@@ -18,7 +18,8 @@ export async function getPhotosForLocation(locationID) {
   const { data, error } = await supabase
     .from('photos')
     .select('*')
-    .eq('location_id', locationID);
+    .eq('location_id', locationID)
+    .order('date_taken', {ascending: false});
 
   if (error) throw new error();
 
