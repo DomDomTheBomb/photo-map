@@ -3,13 +3,15 @@ import { useAuth } from '../../context/AuthContext';
 
 import LogoutIcon from '@mui/icons-material/Logout';
 
+import '@fontsource/quicksand/700.css';
+
 function Header() {
   const isAdmin = useIsAdmin();
   const { signOut } = useAuth();
 
   return (
-    <div className="md:h-15 h-12 md:px-6 px-3 flex items-center bg-primary justify-between">
-      <h1 className="md:text-3xl text-xl text-gray-200 font-bold font-[Century Gothic]">
+    <div className="md:h-15 h-12 md:px-6 px-3 flex items-center bg-primary border-b-3 border-b-secondary justify-between">
+      <h1 className="md:text-3xl text-xl text-secondary font-bold font-[quicksand]">
         Where The F*ck Has Dom Been?
       </h1>
 

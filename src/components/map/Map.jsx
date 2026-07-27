@@ -55,6 +55,20 @@ export default function Map() {
       center: [0, 20],
       zoom: initialZoom,
       projection: 'globe',
+      space: {
+        path: {
+          // Files must live in public/ to be served as static URLs at runtime
+          baseUrl: '/spacemap',
+          format: 'png'
+        }
+      },
+      halo: {
+        scale: 0.6,
+        stops: [
+          [0.0, "rgba(201, 224, 253, 0.4)"],
+          [0.3, "rgba(201, 224, 253, 0)"],
+        ],
+        },
     });
 
     // Each frame, nudge the globe eastward by SPIN_SPEED degrees
@@ -101,7 +115,7 @@ export default function Map() {
             'step',
             ['get', 'point_count'],
             CLUSTER_COLORS.small, // default (2–9)
-            10,
+            8,
             CLUSTER_COLORS.medium, // 10+
             30,
             CLUSTER_COLORS.large, // 30+
@@ -219,7 +233,7 @@ export default function Map() {
       {/* render the map */}
       <div
         ref={mapContainer}
-        className="w-[100%] md:h-[calc(100vh-60px)] h-[calc(100vh-48px)]"
+        className="w-full md:h-[calc(100vh-60px)] h-[calc(100vh-48px)]"
       />
     </>
   );
