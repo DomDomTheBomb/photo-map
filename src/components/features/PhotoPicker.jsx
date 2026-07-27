@@ -1,6 +1,7 @@
 import Dialog from '../ui/Dialog';
 import AddPhoto from './AddPhoto';
 import PhotoInfoReview from './PhotoInfoReview';
+import Spinner from '../ui/spinner/spinner';
 
 import LocationStore from '../../store/locations';
 import { getDistance } from '../../helpers/distance';
@@ -24,6 +25,7 @@ function PhotoPicker({ isOpen, onClose }) {
   const [stage, setStage] = useState(1);
   // for storing the files that user will upload
   const [filesForUpload, setFilesForUpload] = useState([]);
+  const [filesUploading, setFilesUploading] = useState(false);
   // for determining if upload button should be enabled
   const canUpload = useMemo(() => {
     // require files to have location info
@@ -117,6 +119,7 @@ function PhotoPicker({ isOpen, onClose }) {
   }
 
   async function uploadPhotos() {
+    setFilesUploading(true);
     // arbitrary. Set to this for now unless we ever change it
     const batchSize = 3;
     // rows to be uploaded to supabase
@@ -201,6 +204,8 @@ function PhotoPicker({ isOpen, onClose }) {
         .catch((error) => {
           console.log(error);
         });
+
+        setFilesUploading(false);
     }
 
     // upload information
@@ -257,7 +262,7 @@ function PhotoPicker({ isOpen, onClose }) {
             onClick={uploadPhotos}
             disabled={canUpload}
           >
-            Upload
+            {!filesUploading ? ("Upload") : <Spinner size="12px" thickness="1.5px"/>}
           </button>
         )}
 

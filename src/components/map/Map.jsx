@@ -50,7 +50,8 @@ export default function Map() {
 
     map.current = new maptilersdk.Map({
       container: mapContainer.current,
-      style: maptilersdk.MapStyle.BASE,
+      // The SDK appends the API key automatically since maptilersdk.config.apiKey is set globally
+      style: import.meta.env.VITE_MAP_STYLE_URL,
       center: [0, 20],
       zoom: initialZoom,
       projection: 'globe',

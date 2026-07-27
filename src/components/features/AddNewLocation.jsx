@@ -29,8 +29,7 @@ function AddNewLocation({ isOpen, onClose }) {
       !!city &&
       !!country?.code &&
       !!coordinates?.latitude &&
-      !!coordinates?.longitude &&
-      !!dateVisited
+      !!coordinates?.longitude
     );
   }, [locationName, city, country, coordinates, dateVisited]);
 
@@ -140,7 +139,7 @@ function AddNewLocation({ isOpen, onClose }) {
           {(item) => (
             <div>
               <div className="font-medium text-sm">{item.name}</div>
-              <div className="text-xs text-gray-400">{item.country}</div>
+              <div className="text-xs text-gray-400">{item.admin1}, {item.admin2}, {item.country}</div>
             </div>
           )}
         </Select>
