@@ -10,9 +10,19 @@ function PhotoInfoReview({ filesForUpload, onFileUpdate, onRemove }) {
   const locations = LocationStore((state) => state.locations);
 
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [presetLocation, setPresetLocation] = useState(null);
 
+  // assign location to all photos
   function assignAllLocation(locationId) {
     filesForUpload.forEach((f, i) => onFileUpdate(i, 'locationId', locationId))
+  }
+
+  // send coordinates to new location dialog in case photo already has it
+  function sendLocationCoordinates(i) {
+    // if we have both valid lat and long, send it
+    if (filesForUpload[i].gps?.latitude && filesForUpload[i].gps?.longitude) {
+      setPresetLocation([filesForUpload[i].gps.latitude, filesForUpload[i].gps.longitude])
+    }
   }
 
   return (
@@ -21,12 +31,16 @@ function PhotoInfoReview({ filesForUpload, onFileUpdate, onRemove }) {
         className="z-70"
         isOpen={locationDialogOpen}
         onClose={() => setLocationDialogOpen(false)}
+        preLoadCoords={presetLocation}
       />
       <div>
         <div>
           <span className="text-2xl font-medium"> Review Photos </span>
         </div>
 
+
+        {/* list of photos and details */}
+        <div className="max-h-[60vh] overflow-y-auto">
         {/* Have drop down to assign location to all photos */}
         <div className="flex flex-col ml-1">
           <span className="text-sm mt-2"> Assign location to all </span>
@@ -48,9 +62,6 @@ function PhotoInfoReview({ filesForUpload, onFileUpdate, onRemove }) {
             <button> Add New Location </button>
           </Select>
         </div>
-
-        {/* list of photos and details */}
-        <div className="max-h-[60vh] overflow-y-auto">
           {/* render list of photos */}
           {filesForUpload.map((f, i) => (
             <div key={i} className="my-2 flex rounded-lg border group relative">
@@ -83,7 +94,7 @@ function PhotoInfoReview({ filesForUpload, onFileUpdate, onRemove }) {
                   placeholder="select a location..."
                   value={f.uploadInfo.locationId ?? undefined}
                   prependItem={
-                    <button onClick={() => setLocationDialogOpen(true)}>
+                    <button onClick={() => {sendLocationCoordinates(i); setLocationDialogOpen(true)}}>
                       Add New Location
                     </button>
                   }

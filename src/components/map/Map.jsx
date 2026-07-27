@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import * as maptilersdk from '@maptiler/sdk';
+
+import { maptilersdk } from '../../services/maptiler'
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 import { getLocations } from '/src/services/supabase';
 import { getPhotosForLocation } from '../../services/supabase';
@@ -9,9 +10,6 @@ import PhotoCarousel from '../features/PhotoCarousel';
 
 import useLocations from '../../store/locations';
 import { MD_BREAKPOINT } from '../../helpers/const';
-
-// Set the global API key for all MapTiler requests
-maptilersdk.config.apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
 
 // Degrees of longitude to advance per animation frame (~3°/sec at 60fps)
 const SPIN_SPEED = 0.05;
@@ -164,21 +162,38 @@ export default function Map() {
         },
       });
 
-      // Clicking a cluster zooms in enough to break it apart
+      // Clicking a cluster fits the map to all points inside it
       map.current.on('click', 'clusters', async (e) => {
-        const features = map.current.queryRenderedFeatures(e.point, {
-          layers: ['clusters'],
-        });
-        const clusterId = features[0].properties.cluster_id;
+        if (!e.features || e.features.length === 0) return;
+        const feature = e.features[0];
+        const clusterId = feature.properties.cluster_id;
+        const pointCount = feature.properties.point_count;
 
-        const zoom = await map.current
+        // Fetch every leaf point in this cluster (limit = total count to get all of them)
+        const leaves = await map.current
           .getSource('locations')
-          .getClusterExpansionZoom(clusterId);
+          .getClusterLeaves(clusterId, pointCount, 0);
 
-        map.current.easeTo({
-          center: features[0].geometry.coordinates,
-          zoom,
-        });
+        // Build a bounding box that contains all leaf coordinates
+        const bounds = leaves.reduce(
+          (bbox, leaf) => {
+            const [lng, lat] = leaf.geometry.coordinates;
+            return [
+              Math.min(bbox[0], lng),
+              Math.min(bbox[1], lat),
+              Math.max(bbox[2], lng),
+              Math.max(bbox[3], lat),
+            ];
+          },
+          [Infinity, Infinity, -Infinity, -Infinity]
+        );
+
+        // cameraForBounds gives us the center + zoom that fits the bounds,
+        // then flyTo animates there smoothly (fitBounds ignores animate on globe projection)
+        const camera = map.current.cameraForBounds(bounds, { padding: 80, maxZoom: 12 });
+        if (camera) {
+          map.current.flyTo({ ...camera, duration: 1200, essential: true });
+        }
       });
 
       // Show a pointer cursor when hovering clusters or individual pins

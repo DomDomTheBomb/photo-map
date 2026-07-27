@@ -1,12 +1,13 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import debounce from 'lodash/debounce';
 import Dialog from '../ui/Dialog';
 import Select from '../ui/Select';
-import { searchCity } from '../../services/geocoding-api';
 import { insertLocationTableRow } from '../../services/supabase';
+import { searchCity, reverseSearch } from '../../services/maptiler';
 import useLocations from '../../store/locations';
 
-function AddNewLocation({ isOpen, onClose }) {
+
+function AddNewLocation({ isOpen, onClose, preLoadCoords=null }) {
   // Form field states
   const [locationName, setLocationName] = useState('');
   const [city, setCity] = useState('');
@@ -22,6 +23,23 @@ function AddNewLocation({ isOpen, onClose }) {
   const [isSearching, setIsSearching] = useState(false);
 
   const addLocation = useLocations((state) => state.addLocation);
+
+  // if preload coordinates is set, preload search results
+  useEffect(() => {
+    if (preLoadCoords) {
+      setIsSearching(true);
+      // perform reverse search for coordinates
+      reverseSearch(preLoadCoords[0], preLoadCoords[1], {types: ['country', 'region', 'subregion', 'county', 'municipality', 'municipal_district', 'locality', 'neighbourhood']})
+        .then((data) => {
+          // API returns undefined results key when there are no matches
+          setCityOptions(data ?? []);
+        })
+        .catch((error) => {
+          throw new error
+        })
+        .finally(() => {setIsSearching(false)})
+    }
+  }, [preLoadCoords])
 
   const canCreate = useMemo(() => {
     return (
@@ -43,9 +61,9 @@ function AddNewLocation({ isOpen, onClose }) {
       }
       setIsSearching(true);
       try {
-        const data = await searchCity(query, { count: 10 });
+        const data = await searchCity(query, { limit: 10 });
         // API returns undefined results key when there are no matches
-        setCityOptions(data.results ?? []);
+        setCityOptions(data ?? []);
       } catch (err) {
         console.error('City search failed:', err);
         setCityOptions([]);
@@ -62,17 +80,13 @@ function AddNewLocation({ isOpen, onClose }) {
     setCountry({ code: item.country_code, name: item.country });
     setCoordinates({ latitude: item.latitude, longitude: item.longitude });
     setCityOptions([]); // clear results after selection
+
+    // if name is blank, set name too
+    if (!locationName) setLocationName(item.name);
   }
 
   // Create new location entry in db
   async function handleLocationCreation() {
-    console.log(locationName);
-    console.log(city);
-    console.log(country.code);
-    console.log(coordinates.latitude);
-    console.log(coordinates.longitude);
-    console.log(dateVisited);
-
     const newLocation = [
       {
         name: locationName,
@@ -139,7 +153,7 @@ function AddNewLocation({ isOpen, onClose }) {
           {(item) => (
             <div>
               <div className="font-medium text-sm">{item.name}</div>
-              <div className="text-xs text-gray-400">{item.admin1}, {item.admin2}, {item.country}</div>
+              <div className="text-xs text-gray-400"> {item.place_name} </div>
             </div>
           )}
         </Select>
