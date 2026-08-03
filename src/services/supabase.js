@@ -13,6 +13,14 @@ export async function getLocations() {
   return data;
 }
 
+export async function getLocationsWithPhotoCount() {
+  const { data, error } = await supabase.rpc('get_locations_with_photo_counts');
+
+  if (error) throw new error();
+
+  return data;
+}
+
 // retrieve photos of a given location
 export async function getPhotosForLocation(locationID) {
   const { data, error } = await supabase
@@ -25,6 +33,20 @@ export async function getPhotosForLocation(locationID) {
 
   return data;
 }
+
+// retrieve photos for locations
+export async function getPhotosForLocations(locationIDs) {
+  const { data, error } = await supabase
+    .from('photos')
+    .select('*')
+    .in('location_id', locationIDs)
+    .order('date_taken', {ascending: false});
+
+  if (error) throw new error();
+
+  return data;
+}
+
 
 // removes photo given its ID
 export async function deletePhotoRow(photoID) {
