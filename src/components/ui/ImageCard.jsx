@@ -14,7 +14,7 @@ function ImageCard({ src, name = '', onRemove }) {
           <CloseIcon sx={{ fontSize: 12 }} />
         </button>
       </div>
-      <span className="w-20 text-xs truncate hover:w-fit hover:overflow-visible hover:z-1 "> {name} </span>
+      <span className="w-20 text-xs text-left truncate hover:w-fit hover:overflow-visible hover:z-500 hover:bg-white hover:px-5 "> {name} </span>
     </div>
   );
 }

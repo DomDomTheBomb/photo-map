@@ -5,7 +5,7 @@ const useLocations = create((set) => ({
   photos: [],
   setLocations: (l) => set(() => ({ locations: l })),
   addLocation: (loc) =>
-    set((state) => ({ locations: [...state.locations, loc] })),
+    set((state) => ({ locations: [loc, ...state.locations] })),
   setPhotos: (p) => set(() => ({ photos: p })),
 }));
 

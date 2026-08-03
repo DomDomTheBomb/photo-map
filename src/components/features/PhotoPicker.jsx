@@ -205,25 +205,23 @@ function PhotoPicker({ isOpen, onClose }) {
           console.log(error);
         });
 
-        setFilesUploading(false);
     }
 
     // upload information
     await insertPhotoTableRow(uploadRows)
-      .then((data) => {
-        console.log(data);
-      })
       .catch((error) => {
         throw error;
         console.log(error);
       });
+
+    setFilesUploading(false);
 
     // close and reset dialog
     cancel();
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose}>
+    <Dialog isOpen={isOpen} onClose={onClose} width='65%'>
       {/* Stage 1 for adding photos */}
       {stage == 1 && (
         <AddPhoto
