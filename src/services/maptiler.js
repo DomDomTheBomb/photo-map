@@ -2,6 +2,22 @@ import * as maptilersdk from '@maptiler/sdk';
 
 maptilersdk.config.apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
 
+// helper function to map out map tiler location search response
+function mapMapTilerLocationResponse(res) {
+  return {
+    name: res.text,
+    // map tiler data can be messy...
+    country: res.id.includes('country')
+      ? res.text
+      : res.context.find((c) => c.id.includes('country'))?.text,
+    country_code: res.properties?.country_code
+      ?? res.context.find((c) => c.id.includes('country'))?.country_code,
+    latitude: res.center[1],
+    longitude: res.center[0],
+    place_name: res.place_name
+  };
+}
+
 /**
  * Searches for a location by name and returns geocoding results.
  * @param {string} q - The query to search for.
@@ -16,17 +32,11 @@ export async function searchCity(q, options = {}) {
   return maptilersdk.geocoding.forward(q, options)
     .then((data) => {
       // return an object with the data we actually need
-      return data.features.map((f) => ({
-        name: f.text,
-        country: f.properties.place_designation == 'country' ? f.text : f.context.find((c) => c?.place_designation == 'country' )?.text,
-        country_code: f.properties.country_code.toUpperCase(),
-        latitude: f.center[1],
-        longitude: f.center[0],
-        place_name: f.place_name
-      }))
+      return data.features.map((f) => mapMapTilerLocationResponse(f))
     })
     .catch((error) => {
-      throw new error;
+      console.error(error)
+      throw new Error(error);
     })
 }
 
@@ -40,17 +50,11 @@ export async function reverseSearch(latitude, longitude, options = {}) {
   return maptilersdk.geocoding.reverse([longitude, latitude], options)
     .then((data) => {
       // return an object with the data we actually need
-      return data.features.map((f) => ({
-        name: f.text,
-        country: f.properties.place_designation == 'country' ? f.text : f.context.find((c) => c?.place_designation == 'country' )?.text,
-        country_code: f.properties.country_code.toUpperCase(),
-        latitude: f.center[1],
-        longitude: f.center[0],
-        place_name: f.place_name
-      }))
+      return data.features.map((f) => mapMapTilerLocationResponse(f))
     })
     .catch((error) => {
-      throw new error;
+      console.error(error)
+      throw new Error(error);
     })
 }
 

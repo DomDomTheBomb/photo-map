@@ -13,7 +13,7 @@ function AddPhoto({ filesForUpload, setFiles, removeFile }) {
   );
 
   return (
-    <div>
+    <div className='max-h-80%'>
       <div>
         <span className="text-2xl font-medium"> Add Photos </span>
       </div>
@@ -44,7 +44,7 @@ function AddPhoto({ filesForUpload, setFiles, removeFile }) {
         )}
       </Dropzone>
 
-      <div className="my-5 max-h-[50%] grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] overflow-y-auto">
+      <div className="my-5 grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] overflow-y-auto">
         {filesForUpload.length > 0 ? (
           filesForUpload.map((file, index) => (
             <ImageCard

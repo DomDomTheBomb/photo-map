@@ -7,7 +7,7 @@ import { searchCity, reverseSearch } from '../../services/maptiler';
 import useLocations from '../../store/locations';
 
 
-function AddNewLocation({ isOpen, onClose, preLoadCoords=null }) {
+function AddNewLocation({ isOpen, onClose, preLoadCoords=null, onLocationCreated=()=>{}}) {
   // Form field states
   const [locationName, setLocationName] = useState('');
   const [city, setCity] = useState('');
@@ -29,7 +29,7 @@ function AddNewLocation({ isOpen, onClose, preLoadCoords=null }) {
     if (preLoadCoords) {
       setIsSearching(true);
       // perform reverse search for coordinates
-      reverseSearch(preLoadCoords[0], preLoadCoords[1], {types: ['country', 'region', 'subregion', 'county', 'municipality', 'municipal_district', 'locality', 'neighbourhood']})
+      reverseSearch(preLoadCoords[0], preLoadCoords[1], {types: ['continental_marine'], excludeTypes: true})
         .then((data) => {
           // API returns undefined results key when there are no matches
           setCityOptions(data ?? []);
@@ -100,15 +100,15 @@ function AddNewLocation({ isOpen, onClose, preLoadCoords=null }) {
 
     await insertLocationTableRow(newLocation)
       .then((data) => {
-        console.log(data);
         // add new location to the locations list
         addLocation(data[0]);
+        onLocationCreated(data[0]);
       })
       .catch((error) => {
         console.error(error);
         return;
       });
-
+      
     // reset values and then close popup
     resetValues();
     onClose();
