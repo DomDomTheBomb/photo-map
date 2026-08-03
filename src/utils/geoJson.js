@@ -19,6 +19,7 @@ export function locationsToGeoJson(locations) {
         city: loc.city,
         country_iso_code: loc.country_iso_code,
         date_visited: loc.date_visited,
+        photo_count: loc.photo_count
       },
     })),
   };

@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { maptilersdk } from '../../services/maptiler'
 import '@maptiler/sdk/dist/maptiler-sdk.css';
-import { getLocations } from '/src/services/supabase';
-import { getPhotosForLocation } from '../../services/supabase';
+import { getLocationsWithPhotoCount, getPhotosForLocation, getPhotosForLocations } from '../../services/supabase';
 import { locationsToGeoJson } from '/src/utils/geoJson';
 
 import PhotoCarousel from '../features/PhotoCarousel';
@@ -13,6 +12,8 @@ import { MD_BREAKPOINT } from '../../helpers/const';
 
 // Degrees of longitude to advance per animation frame (~3°/sec at 60fps)
 const SPIN_SPEED = 0.05;
+
+const CLUSTER_PHOTOCOUNT_BREAK = 65;
 
 // Cluster color palette — matches the #012A4A navy used in the Header
 const CLUSTER_COLORS = {
@@ -88,7 +89,7 @@ export default function Map() {
       animFrameId.current = requestAnimationFrame(spin);
 
       // Fetch visited locations and convert to GeoJSON
-      const locations = await getLocations();
+      const locations = await getLocationsWithPhotoCount();
       // set the store
       setLocations(locations);
       const geoJson = locationsToGeoJson(locations);
@@ -99,7 +100,7 @@ export default function Map() {
         data: geoJson,
         cluster: true,
         clusterMaxZoom: 10, // stop clustering above zoom 10
-        clusterRadius: 50, // px radius within which points are merged
+        clusterRadius: 100, // px radius within which points are merged
       });
 
       // Cluster bubble — circle sized and colored by point count
@@ -174,26 +175,52 @@ export default function Map() {
           .getSource('locations')
           .getClusterLeaves(clusterId, pointCount, 0);
 
-        // Build a bounding box that contains all leaf coordinates
-        const bounds = leaves.reduce(
-          (bbox, leaf) => {
-            const [lng, lat] = leaf.geometry.coordinates;
-            return [
-              Math.min(bbox[0], lng),
-              Math.min(bbox[1], lat),
-              Math.max(bbox[2], lng),
-              Math.max(bbox[3], lat),
-            ];
-          },
-          [Infinity, Infinity, -Infinity, -Infinity]
-        );
+        // get the total number of photos for all locations in the cluster
+        const totalPhotoCount = leaves.reduce((acc, leaf) => acc + leaf.properties.photo_count, 0)
 
-        // cameraForBounds gives us the center + zoom that fits the bounds,
-        // then flyTo animates there smoothly (fitBounds ignores animate on globe projection)
-        const camera = map.current.cameraForBounds(bounds, { padding: 80, maxZoom: 12 });
-        if (camera) {
-          map.current.flyTo({ ...camera, duration: 1200, essential: true });
+        // if total photos in leaves is <= break constant, display photos from all locations
+        if (totalPhotoCount <= CLUSTER_PHOTOCOUNT_BREAK) {
+          // grab the locationIDs
+          const locationIDs = leaves.map((leaf) => leaf.properties.id);
+          setLocationName('')
+          setDialogToggle(true);
+          setArePhotosLoading(true);
+
+          getPhotosForLocations(locationIDs)
+            .then((data) => {
+              setPhotos(data);
+            })
+            .catch((error) => {
+              console.error(error);
+            })
+            .finally(() => {
+              setArePhotosLoading(false);
+            });
         }
+        // else break apart cluster
+        else {
+          // Build a bounding box that contains all leaf coordinates
+          const bounds = leaves.reduce(
+            (bbox, leaf) => {
+              const [lng, lat] = leaf.geometry.coordinates;
+              return [
+                Math.min(bbox[0], lng),
+                Math.min(bbox[1], lat),
+                Math.max(bbox[2], lng),
+                Math.max(bbox[3], lat),
+              ];
+            },
+            [Infinity, Infinity, -Infinity, -Infinity]
+          );
+  
+          // cameraForBounds gives us the center + zoom that fits the bounds,
+          // then flyTo animates there smoothly (fitBounds ignores animate on globe projection)
+          const camera = map.current.cameraForBounds(bounds, { padding: 80, maxZoom: 12 });
+          if (camera) {
+            map.current.flyTo({ ...camera, duration: 1200, essential: true });
+          }
+        }
+
       });
 
       // Show a pointer cursor when hovering clusters or individual pins
