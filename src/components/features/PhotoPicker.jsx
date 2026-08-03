@@ -47,7 +47,10 @@ function PhotoPicker({ isOpen, onClose }) {
 
       // if field is location, we must also get the long and lat data
       if (field == 'locationId') {
-        const loc = locations.find((l) => l.id == value);
+        // Read directly from the store instead of the closure — the closure captures
+        // locations at render time, but a new location may have been added after the
+        // last render of this component (stale closure), so getState() is authoritative.
+        const loc = LocationStore.getState().locations.find((l) => l.id == value);
 
         if (!newVal[index].uploadInfo.lat)
           newVal[index].uploadInfo.lat = loc.lat;
