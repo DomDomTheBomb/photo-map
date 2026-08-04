@@ -23,8 +23,8 @@ function AddPhoto({ filesForUpload, setFiles, removeFile }) {
         onDrop={onDrop}
         accept={
           {
-            'image/png': ['.jpeg', '.jpg', '.png', '.tiff', '.hiec'],
-          } /* only accept image files */
+            'image/png': ['.jpeg', '.jpg', '.png', '.tiff',],
+          } /* only accept image files TODO: add copatibility for heic/heif*/
         }
       >
         {({ getRootProps, getInputProps, isDragActive }) => (

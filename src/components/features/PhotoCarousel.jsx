@@ -48,7 +48,7 @@ function PhotoCarousel({ isOpen = false, onClose, isLoading = false, name="" }) 
       photos.map((p) => ({
         src: BUCKET_URL + p.display_image_path,
         alt: p.caption,
-        title: (new Date(p.date_taken)).toLocaleDateString(dateOptions),
+        title: locations?.find((loc) => loc.id == p.location_id)?.name + ' - ' + (new Date(p.date_taken)).toLocaleDateString(dateOptions),
         description: p.caption,
       }))
     );
